@@ -1,5 +1,6 @@
 import { Player } from "discord-player";
 import { Message, MessageReaction } from "discord.js";
+import { isPermittedToControl } from "../include/isPermittedToControl";
 
 export async function playFunction(command: Message, player: Player) {
   if (!command.member?.voice.channel) {
@@ -31,14 +32,19 @@ Url to song: ${player.nowPlaying(command).url}
       `);
     });
 
+    let durationMS = player.nowPlaying(message).durationMS;
     let reactionCollector = message.createReactionCollector(
       (reaction, user) => user.id !== message.client.user?.id,
       {
-        time: player.nowPlaying(message).durationMS,
+        time: durationMS ? durationMS : 6000000,
       }
     );
 
     function handleReaction(reaction: MessageReaction) {
+      if(!isPermittedToControl(command, message)) {
+        message.channel.send("Join the voice channel before controlling.");
+        return;
+      }
       switch (reaction.emoji.name) {
         case "⏯":
           if (isPlaying) {
@@ -64,7 +70,7 @@ Url to song: ${player.nowPlaying(command).url}
     reactionCollector.on("collect", (reaction) => {
       handleReaction(reaction);
     });
-    
+
     reactionCollector.on("remove", (reaction) => {
       handleReaction(reaction);
     });
