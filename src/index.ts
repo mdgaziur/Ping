@@ -8,13 +8,13 @@ import { Player } from 'discord-player';
 config();
 
 (async () => {
-  if(!process.env.PING_DISCORD_TOKEN) {
-    throw new Error("Discord token is not set!");
+  if(!process.env.PING_DISCORD_TOKEN || !process.env.PING_DISCORD_OAUTH) {
+    throw new Error("Discord token or oauth url is not set!");
   }
 
   let app = express();
   app.get("/", (req, res: Response) => {
-    res.redirect("https://discord.com/api/oauth2/authorize?client_id=798462656935755776&permissions=36710400&scope=bot");
+    res.redirect(process.env.PING_DISCORD_OAUTH);
   });
   app.listen(8080);
 
